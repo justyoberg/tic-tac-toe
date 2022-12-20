@@ -20,6 +20,10 @@ h1 {
 }
 
 .board > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5rem;
   background-color: #fff;
   height: 200px;
   width: 200px;
