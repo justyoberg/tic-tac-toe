@@ -1,89 +1,105 @@
-// Factory for creating players
-const playerFactory = () => {
-
-  const winner = false;
-  const marker = null;
-
-  return {winner, marker};
-};
-
-// Module for the Gameboard object
 const gameBoard = (() => {
 
-  // Gameboard array
-  const board = ["", "", "", "", "", "", "", "", ""];
+  let board = [0,1,2,3,4,5,6,7,8];
+  let gameObj = {};
+  
+  const winningMoves = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [3, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
 
-  // Update the Gameboard with a player's move
-  const updateBoard = (event) => {
+  const initializeGameVars = (game) => {
+    // Add variables to the game object
+    game.marks = ["X", "O"];
 
-    let square = event.target.classList[0];
+    // playerTurn alternates between 0 and 1, and is used as the index number for marks
+    game.playerTurn = 0;
+    game.turns = 0;
+    game.gameover = false;
+    return game
+  }
 
-    if (board[square] == "" && game.turn == 1) {
-      board[square] = game.player1.marker;
-      game.turn = 2;
-    } else if (board[square] == "" && game.turn == 2) {
-      board[square] = game.player2.marker;
-      game.turn = 1;
-    } else {
-      console.log("Invalid move!");
-    };
-    displayController.renderBoard();
-  };
+  const playerMove = (event) => {
+    // Each div has a class corresponding to an array index,
+    // If the current array item is NOT an integer, it will be overwritten with a player piece
+    if (!isNaN(board[event.target.classList[0]])) {
+      // Place a mark on the board array
+      if (gameObj.playerTurn === 0) {
+        // Append the current players mark in the array index
+        // and update the textContent of the div
+        board[event.target.classList[0]] = gameObj.marks[0];
+        event.target.textContent = gameObj.marks[0];
+        ++gameObj.turns;
+      } else if (gameObj.playerTurn === 1) {
+        board[event.target.classList[0]] = gameObj.marks[1];
+        event.target.textContent = gameObj.marks[1]
+        ++gameObj.turns;
+      }
+    }
+    checkForWinner();
+  }
 
-  return {board, updateBoard};
+  const checkForWinner = () => {
+    // Check for a winner, and if no winner is found, alternate 
+    // which player's turn it is
+    for (let i = 0; i < winningMoves.length; i++) {
+      if (board[winningMoves[i][0]] === board[winningMoves[i][1]] &&
+          board[winningMoves[i][1]] === board[winningMoves[i][2]]) {
+            return console.log(gameObj.marks[gameObj.playerTurn] + " wins!");
+      }
+    }
+    if (gameObj.turns > 8) return console.log("It's a tie!");
+
+    // Switch turns if no winner is found, and the game isn't yet a tie
+    switchTurns();
+  }
+
+  const switchTurns = () => {
+    // Alternate turns
+    gameObj.playerTurn  === 0 ? ++gameObj.playerTurn : --gameObj.playerTurn;
+  }
+
+  const startGame = (game) => {
+    // Hide modal
+    const modalDivs = document.querySelectorAll(".close-modal");
+    modalDivs.forEach((div) => {div.style.visibility = "hidden";});
+    
+    // Add variables to the gameObject
+    gameObj = Object.assign(gameObj, initializeGameVars(game))
+  }
+
+  return {board, playerMove, startGame}
 })();
 
-// Module for rendering the Gameboard and making moves
 const displayController = (() => {
 
   const squareDivs = document.querySelectorAll(".square");
-  const announcements = document.querySelector(".announce");
+  const form = document.querySelector("form");
 
-  // Render the gameboard to each respective HTML div
-  const renderBoard = () => {
-    squareDivs.forEach((square) => {
-      square.textContent = gameBoard.board[square.classList[0]]
-    });
-  }
-
-  const setupListeners = () => {
+  // Setup event listeners
+  const setupEventListeners = (() => {
+    // Player square selection
     squareDivs.forEach((div) => {
-      div.addEventListener("click", gameBoard.updateBoard);
+      div.addEventListener("click", gameBoard.playerMove)
     })
-  };
+    // Form submit listener
+    form.addEventListener("submit", (event) => {
+      // Prevent page refresh from submitting form
+      event.preventDefault();
 
-  return {renderBoard, setupListeners, announcements};
+      // Create a gameObject containing the player names
+      const formData = new FormData(event.target);
+      const gameObject = Object.fromEntries(formData);
+      gameBoard.startGame(gameObject);
+    })
+  })()
+  
+  return {setupEventListeners};
 })();
 
-const game = (() => {
-
-  const player1 = playerFactory();
-  const player2 = playerFactory();
-  let turn = 0;
-
-  const whoGoesFirst = () => {
-
-    if (Math.random() < 0.5) {
-      player1.marker = "X";
-      game.turn = 1;
-      player2.marker = "O";
-    } else {
-      player1.marker = "O";
-      player2.marker = "X";
-      game.turn = 2;
-    }
-
-  };
-
-  const playGame = () => {
-
-    whoGoesFirst();
-    displayController.setupListeners();
-    displayController.renderBoard();
-
-  };
-
-  return {playGame, player1, player2, turn};
-})();
-
-game.playGame();
