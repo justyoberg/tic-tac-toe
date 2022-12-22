@@ -61,3 +61,11 @@ input, .start {
   height: 200px;
   width: 200px;
 }
+
+.announcer {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 200px;
+  color: white;
+}
