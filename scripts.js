@@ -59,9 +59,10 @@ const gameBoard = (() => {
             return displayController.resetGame();
       }
     }
-    if (gameObj.turns > 9) {
+    if (gameObj.turns > 8) {
       displayController.announce("It was a tie!");
-      displayController.resetGame();
+      board = [0,1,2,3,4,5,6,7,8];
+      return displayController.resetGame();
     }
     // Switch turns if no winner is found, and the game isn't yet a tie
     switchTurns();
