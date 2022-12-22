@@ -124,7 +124,6 @@ const displayController = (() => {
     })
   };
   
+  setupEventListeners();
   return {resetGame, announce, squareDivs, setupEventListeners};
 })();
-
-displayController.setupEventListeners();
